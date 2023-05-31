@@ -4,9 +4,9 @@
 //   - uses of tagged structs, enums and unions are not checked against declarations of the same tag
 //   - multiple uses of tagnames for structs, enums, unions etc. is not checked for
 //   - enum values are neither tracked in the environment, nor is their value determined in any way
-//   - struct alignment
+//   - struct bit-fields
 //   - type qualifiers (volatile / const)
-//   - weird legacy function declaration
+//   - K&R legacy function declaration
 // --------------------------------------------------
 
 
