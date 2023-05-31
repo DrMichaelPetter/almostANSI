@@ -34,3 +34,6 @@ console.log(
     )
 )
 ```
+## see the code in action:
+
+We have a small [HTML-demonstrator](https://github.com/DrMichaelPetter/almostANSI/blob/main/demo/index.html) running [here](https://drmichaelpetter.github.io/almostANSI)
