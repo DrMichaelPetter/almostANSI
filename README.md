@@ -17,8 +17,20 @@ lightweight almost ANSI C Parser for javascript in jison.
 
 ``` node node_modules/jison/lib/cli.js  ansic.jison ansic.jisonlex ```
 
-## test compiler:
+## test compiler CLI:
 
 ``` node ansic.js test.c ```
 
+## test compiler as library:
 
+```
+var parser = require("./ansic").parser
+
+console.log(
+    JSON.stringify(
+        parser.parse("int main() { x = 25+x; } "),
+        null, 
+        2
+    )
+)
+```

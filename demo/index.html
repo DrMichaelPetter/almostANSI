@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>almostANSI demo page</title>
+</head>
+
+<body>
+    <div id="header">
+        <h1>almostANSI</h1>
+    </div>
+    <h1>C parser demo</h1>
+    <p>Enter a C translation unit, such as int main() { return 0; }:</p>
+    <p>
+        <textarea rows="24" cols="40" name="to_translate" id="to_translate">// comment 
+void main() {
+    return 0;
+}</textarea>
+        <button id="do_translate">parse!</button>
+        <span id="error_message" style="font-family: monospace; "></span>
+    </p>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="./ansic.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#do_translate ").click(function() {
+                try {
+                    var result = ansic.parse($("textarea#to_translate").val());
+                    //.val());
+                    $("#error_message").empty();
+                    $("#outline").remove();
+                    pre = document.createElement('pre');
+                    document.body.appendChild(pre);
+                    pre.setAttribute("id", "outline");
+                    pre.innerHTML = JSON.stringify(result, null, 2);;
+                } catch (e) {
+                    $("#outline").remove()
+                    $("#error_message").html(String("\n " + e).replace(/\n/g, "<br>"));
+                }
+            });
+        });
+    </script>
+
+    </div>
+</body>
+
+</html>

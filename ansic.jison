@@ -550,8 +550,9 @@ jump_statement
 
 translation_unit 
 	: external_declaration 						{ $$=[...$1]; }
+	| external_declaration EOF					{ $$=[...$1]; return $$; }
 	| translation_unit external_declaration 	{ $$=[...$1].concat($2); }
-	| translation_unit external_declaration EOF { $$=[...$1].concat($2); printtree(environment($$)); }
+	| translation_unit external_declaration EOF { $$=[...$1].concat($2); return $$; }
 	;
 
 external_declaration
