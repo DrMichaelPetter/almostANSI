@@ -38,13 +38,16 @@ jobs:
         run: |
           npm install jison
           node node_modules/jison/lib/cli.js ansic.jison ansic.jisonlex
+          mkdir demonstration
+          cp demo/index.html demonstration
+          cp ansic.js demonstration
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload entire repository
-          path: '.'
+          path: 'demonstration'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
