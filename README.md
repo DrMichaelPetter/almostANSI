@@ -1,5 +1,6 @@
 # almostANSI
-lightweight almost ANSI C Parser for javascript in jison.
+lightweight almost ANSI C Parser for javascript in jison. Parses plain C (no preprocessor, just C) source files and returns a javascript-object based
+representation of its AST with location information.
 
 ### what's missing ('cause it's too good to be true for 3 days of work):
 - error recovery
@@ -26,11 +27,11 @@ node node_modules/jison/lib/cli.js  ansic.jison ansic.jisonlex
 ```
 The resulting ```ansic.js``` is now a standalone javascript file, that can be used without any dependencies.
 
-## test compiler CLI:
+## test parser CLI (will usually only output errors on faulty input):
 
 ``` node ansic.js test.c ```
 
-## test compiler as library:
+## test parser from within javascript code:
 
 ```
 var parser = require("./ansic").parser
