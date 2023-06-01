@@ -2,7 +2,6 @@
 lightweight almost ANSI C Parser for javascript in jison.
 
 ### what's missing ('cause it's too good to be true for 3 days of work):
-- strings.... d'oh!
 - error recovery
 - general robustness against malicious C programming habits :-)
 - uses of tagged structs, enums and unions are not checked against declarations of the same tag

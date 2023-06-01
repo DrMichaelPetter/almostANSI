@@ -1,6 +1,12 @@
 %lex
 digit                       [0-9]
 id                          [a-zA-Z][a-zA-Z0-9]*
+hex		                	[a-fA-F0-9]
+exponent                	[Ee][+-]?{digit}+
+floatsuffix		            [fFlL]
+intsuffix                	[uUlL]*
+
+%options flex
 
 %%
 "//".*                      /* ignore comment */
@@ -37,15 +43,28 @@ id                          [a-zA-Z][a-zA-Z0-9]*
 "return"                     return 'RETURN';
 "sizeof"                     return 'SIZEOF';
 "..."                        return 'ELLIPSIS';
+
+L\'(\\.|[^\\\'])+\'         %{ yytext = yytext.substr(2,yyleng-2); return 'CONSTANT'; %}
+\'(\\.|[^\\\'])+\'          %{ yytext = yytext.substr(1,yyleng-2); return 'CONSTANT'; %}
+
+L\"(\\.|[^\\\"])*\" 		%{ yytext = yytext.substr(2,yyleng-2); return 'STRING_LITERAL'; %}
+\"(\\.|[^\\\"])*\" 		    %{ yytext = yytext.substr(1,yyleng-2); return 'STRING_LITERAL'; %}
+
+0[xX]{hex}+{intsuffix}?		                        return 'CONSTANT';
+0{digit}+{intsuffix}?		                        return 'CONSTANT';
+{digit}+{intsuffix}?		                        return 'CONSTANT';
+
+{digit}+{exponent}{floatsuffix}?		            return 'CONSTANT';
+{digit}*"."{digit}+({exponent})?{floatsuffix}?	    return 'CONSTANT';
+{digit}+"."{digit}*({exponent})?{floatsuffix}?	    return 'CONSTANT';
+
+
 {id}                         %{
                                 if (parser.yy.typenames.includes(yytext))
                                     return 'TYPE_NAME';
                                 return 'IDENTIFIER';
                              %}
-{digit}+                    return 'CONSTANT';
 
-//%token STRING_LITERAL 
-//TYPE_NAME
 "->"                        return 'PTR_OP';
 "++"                        return 'INC_OP';
 "--"                        return 'DEC_OP';

@@ -7,7 +7,7 @@ double g(int,double *);
 struct stg  ttt;
 
 int **bla;
-int blubb = 5*25+4;
+int blubb = 5*25L+4u;
 
 enum foobar {
     a,b
@@ -18,6 +18,10 @@ struct stg{
 int main(){
     int *tada;
     enum foobar fob;
+    char* str = "fischers fritze fischt frische fische";
+    double doo = 4.1e+3;
+    doo = .5 * 4.-0xfe;
+    str = L"oo";
     bbbb: **bla == g(blubb+25,(void*)0);
     for (**bla=5; **bla<4;bla++) **bla;
     fob = a;
