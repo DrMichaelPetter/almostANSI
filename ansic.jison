@@ -514,7 +514,7 @@ partial2_compound_statement
 
 declaration_list
 	: declaration											-> [$1]
-	| declaration_list declaration							{ $$=[...$1];$$.push($1); }
+	| declaration_list declaration							{ $$=[...$1];$$.push($2); }
 	;
 
 statement_list
