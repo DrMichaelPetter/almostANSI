@@ -502,10 +502,10 @@ compound_statement
 	;
 
 partial_compound_statement
-	: partial2_compound_statement				 	              { deleteScope(); $$={  declarations:[], code: [] }; }
-	| partial2_compound_statement statement_list 	              { deleteScope(); $$={  declarations:[], code: [...$2]}; }
-	| partial2_compound_statement declaration_list                { deleteScope(); $$={  declarations:$2, code: [] }; }
-	| partial2_compound_statement declaration_list statement_list { deleteScope(); $$={  declarations:$2, code:[...$3] };  }
+	: partial2_compound_statement				 	              { deleteScope(); $$={  kind: "stmt", type: "block", declarations:[], code: [] }; }
+	| partial2_compound_statement statement_list 	              { deleteScope(); $$={  kind: "stmt", type: "block", declarations:[], code: [...$2]}; }
+	| partial2_compound_statement declaration_list                { deleteScope(); $$={  kind: "stmt", type: "block", declarations:$2, code: [] }; }
+	| partial2_compound_statement declaration_list statement_list { deleteScope(); $$={  kind: "stmt", type: "block", declarations:$2, code:[...$3] };  }
 	;
 
 partial2_compound_statement
@@ -561,7 +561,7 @@ external_declaration
 	;
 
 function_definition
-	: declaration_specifiers declarator compound_statement { $$=basetypefor($2,$1,@$);$$.code=$3;$$=[$$]; }
+	: declaration_specifiers declarator compound_statement { $$=basetypefor($2,$1,@$);$$.body=$3;$$=[$$]; }
 //  | declaration_specifiers declarator declaration_list compound_statement  // declaration_list based function declarations are one of the most stupid things on earth -> ignore
 //	| declarator declaration_list compound_statement
 //	| declarator compound_statement // don't even ask me what the purpose of this one is... -> ignore
