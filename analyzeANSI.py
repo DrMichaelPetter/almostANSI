@@ -2,6 +2,7 @@
 import subprocess
 import json
 import sys
+import functools
 
 def printjson(jso):
     print(json.dumps(jso,indent=2))
@@ -156,18 +157,30 @@ def renderEdge(edgelabel):
                 ret="!("+ret+")"
     return ret
 
-def edges2dot():
-    out= ("digraph cfg {")
-    out+=("\n  rankdir=TB ")
+def iterateEdges(collector,forward=True):
+    if (forward==True):
+        values = set(map(lambda x:x["from"], edgekeeper))
+        packed = [[x,[[y["label"],y["to"]] for y in edgekeeper if y["from"]==x]] for x in values]
+    else:
+        values = set(map(lambda x:x["to"], edgekeeper))
+        packed = [[x,[[y["label"],y["from"]] for y in edgekeeper if y["to"]==x]] for x in values]
+    for p in packed:
+        collector(p[0],p[1])
+
+def defaultCollector(src,edges):
+    print("("+str(src)+","+str(edges)+")")
+
+def graphvizCollector(out,src,edges):
+    src=str(src)
     edgecounter=0
-    for edge in edgekeeper:
+    for edge in edges:
         edgecounter+=1
-        out+=("\n  s"+str(edge["to"])+" [shape=circle,fillcolor=yellow,style=filled,label=\""+str(edge["to"])+"\"] ")
-        out+=("\n  s"+str(edge["from"])+" [shape=circle,fillcolor=yellow,style=filled,label=\""+str(edge["from"])+"\"] ")
-        out+=("\n  e"+str(edgecounter)+" [shape=box, color=blue, label=\""+renderEdge(edge["label"])+"\"]")
-        out+=("\n s"+str(edge["from"])+"-> e"+str(edgecounter)+" -> s"+str(edge["to"]))
-    out+=("\n}")
-    return out
+        edgelab=src+"e"+str(edgecounter)
+        to=str(edge[1])
+        out.append("\n  s"+src+" [shape=circle,fillcolor=yellow,style=filled,label=\""+src+"\"] ")
+        out.append("\n  s"+to+" [shape=circle,fillcolor=yellow,style=filled,label=\""+to+"\"] ")
+        out.append("\n  e"+edgelab+" [shape=box, color=blue, label=\""+renderEdge(edge[0])+"\"]")
+        out.append("\n s"+src+"-> e"+edgelab+" -> s"+to)
 
 
 if __name__ == '__main__':
@@ -183,7 +196,13 @@ if __name__ == '__main__':
 
     scan_stmt(funs["main"],start,end,end,start,end)
 
-    print(edges2dot())
+    #iterateEdges(defaultCollector)
+    
+    out = ["digraph cfg { \n  rankdir=TB "]
+    collector=functools.partial(graphvizCollector,out)
+    iterateEdges(collector)
+    out.append("\n}")
+    print("".join(out))
 
 #    printjson(funs["main"]["code"])
 
