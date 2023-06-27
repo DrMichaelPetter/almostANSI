@@ -39,33 +39,65 @@ def createEdge(fro,label,to):
     edgekeeper.append(label)
     return label
 
-def scan_block(block,supposedstart,supposedend):
+def scan_block(block,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
     lastinstr=supposedstart
     currentedge={}
     for stmt in block["code"]:
         nextinstr=createNode()
-        currentedge=scan_stmt(stmt,lastinstr,nextinstr)
+        currentedge=scan_stmt(stmt,lastinstr,nextinstr,breakpoint,continuepoint,retpoint)
         lastinstr=nextinstr
     currentedge["to"]=supposedend
     return currentedge
 
-def scan_expressionstmt(exprstmt,supposedstart,supposedend):
+def scan_expressionstmt(exprstmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
     label=exprstmt["expr"]
     return createEdge(supposedstart,label,supposedend)
 
-def scan_whilestmt(whlstmt,supposedstart,supposedend):
+def scan_whilestmt(whlstmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
     stmt=whlstmt["stmt"]
     cond =whlstmt["cond"] 
     truebranch = createNode()
     createEdge(supposedstart,cond,truebranch)
-    scan_stmt(stmt,truebranch,supposedstart)
+    scan_stmt(stmt,truebranch,supposedstart,supposedend,supposedstart,retpoint)
     neg=cond.copy()
     neg["inverted"]=True
     return createEdge(supposedstart,neg,supposedend)
 
-def scan_ifstmt(ifstmt,supposedstart,supposedend):
+
+def scan_forstmt(forstmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
+    init = forstmt["e1"]["expr"]
+    cond = forstmt["e2"]["expr"] 
+    inc  = forstmt["e3"]
+
+    loopstart=createNode()
+    createEdge(supposedstart,init,loopstart)
+
+
+    stmt=forstmt["stmt"]
+
+    truebranch = createNode()
+    createEdge(loopstart,cond,truebranch)
+    incstart = createNode()
+    scan_stmt(stmt,truebranch,incstart,supposedend,loopstart,retpoint)
+    createEdge(incstart,inc,loopstart)
+
+    neg=cond.copy()
+    neg["inverted"]=True
+    return createEdge(loopstart,neg,supposedend)
+
+def scan_dostmt(dostmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
+    stmt=dostmt["stmt"]
+    cond =dostmt["cond"] 
+
+    condpoint = createNode()
+    scan_stmt(stmt,supposedstart,condpoint,supposedend,condpoint,retpoint)
+    createEdge(condpoint,cond,supposedstart)
+    neg=cond.copy()
+    neg["inverted"]=True
+    return createEdge(condpoint,neg,supposedend)
+
+def scan_ifstmt(ifstmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
     stmt=ifstmt["stmt"]
-    elsestmt=ifstmt["else"]
     cond =ifstmt["cond"] 
 
     truebranch = createNode()
@@ -73,36 +105,50 @@ def scan_ifstmt(ifstmt,supposedstart,supposedend):
     end = createNode()
 
     createEdge(supposedstart,cond,truebranch)
-    scan_stmt(stmt,truebranch,end)
+    scan_stmt(stmt,truebranch,end,breakpoint,continuepoint,retpoint)
 
     neg=cond.copy()
     neg["inverted"]=True
-    createEdge(supposedstart,neg,falsebranch)
-    scan_stmt(elsestmt,falsebranch,end)
+
+    if ("else" in ifstmt):
+        createEdge(supposedstart,neg,falsebranch)
+        elsestmt=ifstmt["else"]
+        scan_stmt(elsestmt,falsebranch,end,breakpoint,continuepoint,retpoint)
+    else:
+        createEdge(supposedstart,neg,end)
 
     return createEdge(end,"empty",supposedend)
 
-def scan_return(stmt,supposedstart,supposedend):
-    return createEdge(supposedstart,"return "+stmt["expr"],supposedend)
+def scan_return(stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
+    return createEdge(supposedstart,"return "+stmt["expr"],retpoint)
 
-def scan_stmt(stmt,supposedstart,supposedend):
+def scan_breakstmt(stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
+    return createEdge(supposedstart,"empty",breakpoint)
+
+def scan_continuestmt(stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
+    return createEdge(supposedstart,"empty",continuepoint)
+
+def scan_stmt(stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint):
     match stmt["type"]:
-        case "block": return scan_block(stmt,supposedstart,supposedend)
-        case "expr": return scan_expressionstmt(stmt,supposedstart,supposedend)
-        case "while": return scan_whilestmt(stmt,supposedstart,supposedend)
-        case "if": return scan_ifstmt(stmt,supposedstart,supposedend)
-        case "return": return scan_return(stmt,supposedstart,supposedend)
-#        case "do":
-#        case "for":
-#        case "break":
-#        case "continue":
-#        case "goto":    
+        case "block":     return scan_block         (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "expr":      return scan_expressionstmt(stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "do":        return scan_dostmt        (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "while":     return scan_whilestmt     (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "if":        return scan_ifstmt        (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "return":    return scan_return        (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "for":       return scan_forstmt       (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "break":     return scan_breakstmt     (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+        case "continue":  return scan_continuestmt  (stmt,supposedstart,supposedend,breakpoint,continuepoint,retpoint)
+#        case "goto":
+#        case "switch": 
         case _: return createEdge(supposedstart,"not implemented",supposedend)
 
 def renderEdge(edgelabel):
     if (not type(edgelabel) is dict):
         ret= str(edgelabel)
     else:
+        if (not "left" in edgelabel):
+            print(edgelabel)
         left = edgelabel["left"]
         if (left):
             ret= str(renderEdge(left))+edgelabel["operator"]+str(renderEdge(edgelabel["right"]))
@@ -132,7 +178,10 @@ if __name__ == '__main__':
     out=parseANSIC(infile)
     funs = scanforfunctions(out)
 
-    scan_stmt(funs["main"],createNode(),createNode())
+    start=createNode()
+    end=createNode()
+
+    scan_stmt(funs["main"],start,end,end,start,end)
 
     print(edges2dot())
 

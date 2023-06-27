@@ -44,3 +44,15 @@ console.log(
     )
 )
 ```
+
+## newest addition:
+
+creating a control flow graph from an input file can be achieved via a
+simple Python script - in the default case, we do that for the main
+function. A start point into setting up constraints for a static analysis
+via abstract interpretation can be to process the edges in the ```edgekeeper```
+array and write out constraints for a fixpoint solver.
+
+```
+./analyzeANSI.py [input.c] | xdot /dev/stdin
+```
