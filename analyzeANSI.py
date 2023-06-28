@@ -157,8 +157,8 @@ def renderEdge(edgelabel):
                 ret="!("+ret+")"
     return ret
 
-def iterateEdges(collector,forward=True):
-    if (forward==True):
+def iterateEdges(collector,joinbytarget=True):
+    if (joinbytarget==False):
         values = set(map(lambda x:x["from"], edgekeeper))
         packed = [[x,[[y["label"],y["to"]] for y in edgekeeper if y["from"]==x]] for x in values]
     else:
@@ -182,10 +182,32 @@ def graphvizCollector(out,src,edges):
         out.append("\n  e"+edgelab+" [shape=box, color=blue, label=\""+renderEdge(edge[0])+"\"]")
         out.append("\n s"+src+"-> e"+edgelab+" -> s"+to)
 
+def intervalCollector(out,tgt,edges):
+    target=str(tgt)
+    rhs=[]
+    for edge in edges:
+        label=renderEdge(edge[0])
+        rhs.append("⟦"+label+"⟧# I["+str(edge[1])+"]")
+    rhs=" ⊔ ".join(rhs)
+    out.append("I["+target+"] ⊒ "+rhs)
+
+def polyCollector(out,src,edges):
+    src=str(src)
+    for edge in edges:
+        label=renderEdge(edge[0])
+        target=str(edge[1])
+        out.append("I["+src+"] ⊒ ⟦"+label+"⟧♮ I["+target+"]")
+
+CFG=0
+INTERVALS=1
+POLYNOMIALS=2
 
 if __name__ == '__main__':
-    if (len(sys.argv) !=2):
-        print("usage: almostANSI.py [inputfile.c] | xdot /dev/stdin")
+    if (len(sys.argv) <2):
+        print("usage: almostANSI.py [inputfile.c] [option]")
+        print("     -cfg         CFG in dot format, combines well with  | xdot /dev/stdin")
+        print("     -intervals   interval analysis")
+        print("     -polynomials polynomial relations analysis")
         quit()
     infile=sys.argv[1]
     out=parseANSIC(infile)
@@ -197,13 +219,34 @@ if __name__ == '__main__':
     scan_stmt(funs["main"],start,end,end,start,end)
 
     #iterateEdges(defaultCollector)
-    
-    out = ["digraph cfg { \n  rankdir=TB "]
-    collector=functools.partial(graphvizCollector,out)
-    iterateEdges(collector)
-    out.append("\n}")
-    print("".join(out))
 
+    option=CFG
+    if (len(sys.argv)==3):
+        if (sys.argv[2]=="-intervals"):
+            option=INTERVALS    
+        if (sys.argv[2]=="-polynomials"):
+            option=POLYNOMIALS 
+        
+
+    if option==CFG:
+        out = ["digraph cfg { \n  rankdir=TB "]
+        collector=functools.partial(graphvizCollector,out)
+        iterateEdges(collector,joinbytarget=False)
+        out.append("\n}")
+        print("".join(out))
+    
+    if option==INTERVALS:
+        out = []
+        collector=functools.partial(intervalCollector,out)
+        iterateEdges(collector)
+        print("\n".join(out))
+
+    if option==POLYNOMIALS:
+        out = []
+        collector=functools.partial(polyCollector,out)
+        iterateEdges(collector,joinbytarget=False)
+        print("\n".join(out))
+    
 #    printjson(funs["main"]["code"])
 
 #        printjson(out)
