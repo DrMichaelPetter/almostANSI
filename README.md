@@ -31,9 +31,10 @@ The resulting ```ansic.js``` is now a standalone javascript file, that can be us
 
 ``` node ansic.js test.c ```
 
-## test parser from within javascript code:
+## test parser from within javascript code via commonjs:
 
 ```
+// test.js
 var parser = require("./ansic").parser
 
 console.log(
@@ -45,13 +46,33 @@ console.log(
 )
 ```
 
-## newest addition:
+## test parser from within javascript code via import:
 
-creating a control flow graph from an input file can be achieved via a
-simple Python script - in the default case, we do that for the main
-function. A start point into setting up constraints for a static analysis
-via abstract interpretation can be to process the edges in the ```edgekeeper```
-array and write out constraints for a fixpoint solver.
+```
+// test.mjs
+import * as parser from "./ansic.js"
+
+console.log(
+    JSON.stringify(
+        parser.parse("int main() { x = 25+x; } "),
+        null, 
+        2
+    )
+)
+```
+
+
+# Program Analysis:
+
+We have added a frontend to perform abstract interpretation based static
+program analysis via the simple Python script ```analyzeANSI.py``` - in 
+It comes with a predefined output to graphviz in dot format, as well as with
+a few example constraint systems that are generated when the program is started
+with particular parameters.
+
+A start point into setting up custom constraints for a static analysis
+via abstract interpretation can be to provide a new edge collector for 
+the ```iterateEdges``` and write out constraints for a fixpoint solver.
 
 ```
 ./analyzeANSI.py [input.c] | xdot /dev/stdin
