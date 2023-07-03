@@ -3,6 +3,7 @@ import subprocess
 import json
 import sys
 import functools
+from intervals import round_robin,state_init
 
 def printjson(jso):
     print(json.dumps(jso,indent=2))
@@ -191,16 +192,31 @@ def intervalCollector(out,tgt,edges):
     rhs=" ⊔ ".join(rhs)
     out.append("I["+target+"] ⊒ "+rhs)
 
+def realIntervals(cfg,tgt,edges):
+    cfg[tgt]=edges
+
 def polyCollector(out,src,edges):
     src=str(src)
     for edge in edges:
         label=renderEdge(edge[0])
         target=str(edge[1])
         out.append("I["+src+"] ⊒ ⟦"+label+"⟧♮ I["+target+"]")
+def printres(values):
+    for k,v in values.items():
+        label=str(v)
+        label=""
+        for s,w in v.items():
+            label=label+s+":"
+            for x in w:
+                label+=str(x)
+
+        print("r"+str(k)+"[shape=box,color=pink,label=\""+label+"\"]")
+        print("r"+str(k)+" -> s"+str(k)+"")
 
 CFG=0
 INTERVALS=1
 POLYNOMIALS=2
+INTERVALS2=3
 
 if __name__ == '__main__':
     if (len(sys.argv) <2):
@@ -226,6 +242,8 @@ if __name__ == '__main__':
             option=INTERVALS    
         if (sys.argv[2]=="-polynomials"):
             option=POLYNOMIALS 
+        if (sys.argv[2]=="-intervals2"):
+            option=INTERVALS2 
         
 
     if option==CFG:
@@ -246,7 +264,15 @@ if __name__ == '__main__':
         collector=functools.partial(polyCollector,out)
         iterateEdges(collector,joinbytarget=False)
         print("\n".join(out))
-    
+
+    if option==INTERVALS2:
+        constraints = {}
+        values = { 1:state_init(["i"])}
+        collector=functools.partial(realIntervals,constraints)
+        iterateEdges(collector)
+        round_robin(constraints,values)
+        printres(values)
+
 #    printjson(funs["main"]["code"])
 
 #        printjson(out)
