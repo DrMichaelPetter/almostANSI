@@ -60,7 +60,16 @@ console.log(
     )
 )
 ```
+## test parser from within typescript code via import:
 
+```
+// tsconfig.json : add  "allowJs": true,  
+
+// test.ts
+import * as almostANSI from './ansic.js';
+
+console.log(almostANSI.parse("int main() { return 5; }"));
+```
 
 # Program Analysis:
 
