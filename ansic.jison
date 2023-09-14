@@ -44,7 +44,7 @@
 		return { type:"identifier", name:name }
 	}
 	function pointerto(n,t){
-		ret = t
+		let ret = t
 		for (let i = 1; i <= n; i++) {
   			ret = { type: "pointer", base: ret}
 		} 
@@ -73,7 +73,7 @@
 	function refreshTypenames(b,declarations){
 		if (b.includes("typedef")) {
 			for (declaration of declarations){
-				t=declaration.declarator
+				let t=declaration.declarator
 				while(t.type!="identifier"){
 					t=t.base
 				}
@@ -91,12 +91,12 @@
 		return { kind: "expr", loc: loc, operator:op, child: e}
 	}
 	function environment(decls){
-		decl = {}
-		tn = {}
-		tags = {}
+		let decl = {}
+		let tn = {}
+		let tags = {}
 		for (declaration of decls){
 			if (declaration.declarator.type != "typeplaceholder"){
-				name=findAndResetName(declaration)
+				let name=findAndResetName(declaration)
 				decl[name]=declaration
 				if (declaration.type==="typedef")       tn[name]=declaration
 				if (declaration.type==="declaration") decl[name]=declaration
@@ -115,14 +115,14 @@
 		return { declarations:decl , typenames: tn, structtags: tags }
 	}
 	function findAndResetName(decl){
-		t=decl.declarator
-		told=t
+		let t=decl.declarator
+		let told=t
 		while(t.type!="identifier"){
 			told=t
 			t=t.base
 			if (t.type==="typeplaceholder") return null;
 		}
-		name = t.name
+		let name = t.name
 		told.base=abstracttype()
 		return name
 	}
@@ -131,6 +131,7 @@
 		return smthg
 	}
 	function enumfrom(name,keyvals,loc){
+		let rep = {}
 		if (keyvals!=null)
 		{
 			keystore = { }
