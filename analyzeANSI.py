@@ -225,6 +225,7 @@ if __name__ == '__main__':
         print("usage: almostANSI.py [inputfile.c] [option]")
         print("     -cfg         CFG in dot format, combines well with  | xdot /dev/stdin")
         print("     -intervals   interval analysis")
+        print("     -intervals2  interval analysis graphically represented with | xdot /dev/stdin")
         print("     -polynomials polynomial relations analysis")
         quit()
     infile=sys.argv[1]
